@@ -10,7 +10,7 @@ internal class Program
 
         var start = new Startup();
         var objsync = new DataManager();
-        var dataBaseObject = new FuelPriceDBContext(start.conn);
+        var dataBaseObject = new FuelPriceDBContext(start.conn, start.DaysLookBack);
 
         objsync.GetFuelApiData(dataBaseObject).Wait();
     }

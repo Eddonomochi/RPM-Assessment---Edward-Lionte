@@ -11,5 +11,6 @@ internal class Startup
     public static IConfigurationRoot configuration = builder.Build();
 
     public string conn = configuration.GetConnectionString("DBConnection");
+    public int DaysLookBack = int.Parse(configuration["DaysLookBack"]);
 
 }

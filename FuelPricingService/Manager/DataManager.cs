@@ -1,4 +1,5 @@
-﻿using FuelPricingService.Model;
+﻿using System.Globalization;
+using FuelPricingService.Model;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 
@@ -22,23 +23,22 @@ public class DataManager : IDataManager
 
             foreach (var repo in rootObj.series_data)
             {
-                var counter = 0;
                 foreach (var data in repo.data)
                 {
                     var fuelPrices = new FuelPrices();
 
                     foreach (var dataPoint in data)
                         if (dataPoint.ToString().Length == 8 && !dataPoint.ToString().Contains('.'))
-                            fuelPrices.FuelPriceDate = dataPoint.ToString();
+                        {
+                            var result = DateTime.ParseExact(dataPoint.ToString(), "yyyyMMdd",
+                                CultureInfo.InvariantCulture);
+
+                            fuelPrices.FuelPriceDate = result;
+                        }
                         else
                             fuelPrices.FuelPrice = decimal.Parse(dataPoint.ToString());
-                    counter++;
                     InsertData(fuelContext, fuelPrices);
-                    Console.WriteLine(
-                        $"Number: {counter} Date: {fuelPrices.FuelPriceDate} Price: {fuelPrices.FuelPrice}");
                 }
-
-                Console.WriteLine();
             }
         }
     }
@@ -46,15 +46,19 @@ public class DataManager : IDataManager
 
     private void InsertData(FuelPriceDBContext fuelContext, FuelPrices fuelPrices)
     {
-        var foundFuelPrice = from b in fuelContext.FuelPrices
-                             where b.FuelPriceDate == fuelPrices.FuelPriceDate
-                             select b;
-
-        if (foundFuelPrice.Count() == 0)
+        if (fuelPrices.FuelPriceDate >= DateTime.Today.AddDays(-fuelContext.dlb))
         {
-            fuelPrices.InsertDate = DateTime.Now;
-            fuelContext.Add(fuelPrices);
-            fuelContext.SaveChanges();
+            var foundFuelPrice = from b in fuelContext.FuelPrices
+                where b.FuelPriceDate == fuelPrices.FuelPriceDate
+                select b;
+
+            if (foundFuelPrice.Count() == 0)
+            {
+                fuelPrices.InsertDate = DateTime.Now;
+                fuelContext.Add(fuelPrices);
+                fuelContext.SaveChanges();
+            }
         }
     }
+
 }
