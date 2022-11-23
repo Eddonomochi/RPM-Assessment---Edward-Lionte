@@ -7,11 +7,10 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-
         var start = new Startup();
-        var objsync = new DataManager();
+        var dataManager = new DataManager();
         var dataBaseObject = new FuelPriceDBContext(start.conn, start.DaysLookBack);
 
-        objsync.GetFuelApiData(dataBaseObject).Wait();
+        dataManager.GetFuelApiData(dataBaseObject).Wait();
     }
 }

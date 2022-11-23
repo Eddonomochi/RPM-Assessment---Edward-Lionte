@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace FuelPricingService;
 
@@ -12,5 +11,4 @@ internal class Startup
 
     public string conn = configuration.GetConnectionString("DBConnection");
     public int DaysLookBack = int.Parse(configuration["DaysLookBack"]);
-
 }

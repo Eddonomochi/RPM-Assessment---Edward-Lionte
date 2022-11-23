@@ -9,11 +9,10 @@ public class FuelPriceDBContext : DbContext
         cnn = connectionString;
         dlb = daysLookBack;
     }
-    public  DbSet<FuelPrices> FuelPrices { get; set; }
-    
+
     private string cnn { get; }
     public int dlb { get; }
-
+    public DbSet<FuelPrices> FuelPrices { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
