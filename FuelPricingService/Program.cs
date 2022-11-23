@@ -1,17 +1,17 @@
 ﻿using FuelPricingService.Manager;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using FuelPricingService.Model;
 
-namespace FuelPricingService
+namespace FuelPricingService;
+
+internal class Program
 {
-    class Program
+    private static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            DataManager objsync = new DataManager();
-            objsync.GetFuelApiData().Wait();
-        }
+
+        var start = new Startup();
+        var objsync = new DataManager();
+        var dataBaseObject = new FuelPriceDBContext(start.conn);
+
+        objsync.GetFuelApiData(dataBaseObject).Wait();
     }
 }

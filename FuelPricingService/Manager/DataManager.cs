@@ -1,53 +1,57 @@
-﻿using Newtonsoft.Json;
+﻿using FuelPricingService.Model;
+using Newtonsoft.Json;
+using System.Data.SqlClient;
 using System.Net.Http.Headers;
-using FuelPricingService.DBContext;
-using System.Text.RegularExpressions;
 
-namespace FuelPricingService.Manager
+namespace FuelPricingService.Manager;
+
+public class DataManager : IDataManager
 {
-    public class DataManager : IDataManager
+    public async Task GetFuelApiData(FuelPriceDBContext fuelContext)
     {
+        using HttpClient client = new();
+        client.BaseAddress = new Uri("http://api.eia.gov/series/");
+        client.DefaultRequestHeaders.Accept.Clear();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        var response = await client.GetAsync(
+            "data/?api_key=ec92aacd6947350dcb894062a4ad2d08&series_id=PET.EMD_EPD2D_PTE_NUS_DPG.W&api_key=ec92aacd6947350dcb894062a4ad2d08");
 
-        public async Task GetFuelApiData()
+        if (response.IsSuccessStatusCode)
         {
-            using HttpClient client = new();
-            client.BaseAddress = new Uri("http://api.eia.gov/series/");
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            HttpResponseMessage response = await client.GetAsync(
-                "data/?api_key=ec92aacd6947350dcb894062a4ad2d08&series_id=PET.EMD_EPD2D_PTE_NUS_DPG.W&api_key=ec92aacd6947350dcb894062a4ad2d08");
+            var jsonData = await response.Content.ReadAsStringAsync();
+            var rootObj = JsonConvert.DeserializeObject<Root>(jsonData);
 
-            if (response.IsSuccessStatusCode)
+            foreach (var repo in rootObj.series_data)
             {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                var rootObj = JsonConvert.DeserializeObject<Root>(jsonData);
-
-                foreach (var repo in rootObj.series_data)
+                var counter = 0;
+                foreach (var data in repo.data)
                 {
-                    int counter = 0;
-                    foreach (var data in repo.data)
-                    {
-                        FuelPriceContext priceContext = new FuelPriceContext();
-                        
-                        foreach (var dataPoint in data)
-                        {
-                            if (dataPoint.ToString().Length == 8 && !dataPoint.ToString().Contains('.'))
-                            {
-                                priceContext.FuelPriceDate = dataPoint.ToString();
-                            }
-                            else
-                            {
-                                priceContext.FuelPrice = dataPoint.ToString();
-                            }
-                        }
-                        counter++;
+                    var fuelPrices = new FuelPrices();
 
-                        Console.WriteLine($"Number: {counter} Date: {priceContext.FuelPriceDate} Price: {priceContext.FuelPrice}");
-                    }
-
-                    Console.WriteLine();
+                    foreach (var dataPoint in data)
+                        if (dataPoint.ToString().Length == 8 && !dataPoint.ToString().Contains('.'))
+                            fuelPrices.FuelPriceDate = dataPoint.ToString();
+                        else
+                            fuelPrices.FuelPrice = decimal.Parse(dataPoint.ToString());
+                    counter++;
+                    InsertData(fuelContext, fuelPrices);
+                    Console.WriteLine(
+                        $"Number: {counter} Date: {fuelPrices.FuelPriceDate} Price: {fuelPrices.FuelPrice}");
                 }
+
+                Console.WriteLine();
             }
         }
+    }
+
+    private void InsertData(FuelPriceDBContext fuelContext, FuelPrices fuelPrices)
+    {
+        fuelPrices.InsertDate = DateTime.Now;
+        fuelContext.Add(fuelPrices);
+        fuelContext.SaveChanges();
+    }
+
+    private void ComapreData(FuelPriceDBContext fuelContext)
+    {
     }
 }
