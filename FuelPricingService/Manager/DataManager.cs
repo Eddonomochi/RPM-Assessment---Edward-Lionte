@@ -1,6 +1,5 @@
 ﻿using FuelPricingService.Model;
 using Newtonsoft.Json;
-using System.Data.SqlClient;
 using System.Net.Http.Headers;
 
 namespace FuelPricingService.Manager;
@@ -44,14 +43,18 @@ public class DataManager : IDataManager
         }
     }
 
+
     private void InsertData(FuelPriceDBContext fuelContext, FuelPrices fuelPrices)
     {
-        fuelPrices.InsertDate = DateTime.Now;
-        fuelContext.Add(fuelPrices);
-        fuelContext.SaveChanges();
-    }
+        var foundFuelPrice = from b in fuelContext.FuelPrices
+                             where b.FuelPriceDate == fuelPrices.FuelPriceDate
+                             select b;
 
-    private void ComapreData(FuelPriceDBContext fuelContext)
-    {
+        if (foundFuelPrice.Count() == 0)
+        {
+            fuelPrices.InsertDate = DateTime.Now;
+            fuelContext.Add(fuelPrices);
+            fuelContext.SaveChanges();
+        }
     }
 }
