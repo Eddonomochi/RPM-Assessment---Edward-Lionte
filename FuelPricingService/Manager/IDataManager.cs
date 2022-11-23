@@ -1,7 +1,7 @@
-﻿namespace FuelPriceService.Manager
+﻿namespace FuelPricingService.Manager
 {
     public interface IDataManager
     {
-        
+
     }
 }
