@@ -7,10 +7,9 @@ namespace FuelPricingService;
 
 public class SchedulerService : BackgroundService
 {
-    private readonly TimeSpan _period = TimeSpan.FromSeconds(5);
     private readonly IServiceScopeFactory factory;
-
     private readonly ILogger<SchedulerService> logger;
+    private readonly TimeSpan period = TimeSpan.FromDays(7);
     private int executionCount;
 
     public SchedulerService(ILogger<SchedulerService> iLogger, IServiceScopeFactory scopeFactory)
@@ -23,7 +22,7 @@ public class SchedulerService : BackgroundService
     {
         //timer = new Timer(Run, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
 
-        using var timer = new PeriodicTimer(_period);
+        using var timer = new PeriodicTimer(period);
         while (
             !stoppingToken.IsCancellationRequested &&
             await timer.WaitForNextTickAsync(stoppingToken))
@@ -35,12 +34,12 @@ public class SchedulerService : BackgroundService
 
                 executionCount++;
                 logger.LogInformation(
-                    $"Executed Fuel Price DB Migration - Count: {executionCount}");
+                    $"Executed Fuel Price DB migration - Count: {executionCount}");
             }
             catch (Exception ex)
             {
                 logger.LogInformation(
-                    $"Failed to execute Fuel Price DB Migration with exception message: {ex.Message}");
+                    $"Failed to execute Fuel Price DB migration with exception message: {ex.Message}");
             }
     }
 }
