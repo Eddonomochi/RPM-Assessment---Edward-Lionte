@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
+using System.Net.Http.Headers;
 using FuelPricingService.Model;
 using Newtonsoft.Json;
-using System.Net.Http.Headers;
 
-namespace FuelPricingService.Manager;
+namespace FuelPricingService.Engine;
 
-public class DataManager : IDataManager
+public class DataEngine
 {
     public async Task GetFuelApiData(FuelPriceDBContext fuelContext)
     {
@@ -22,23 +22,24 @@ public class DataManager : IDataManager
             var rootObj = JsonConvert.DeserializeObject<Root>(jsonData);
 
             foreach (var repo in rootObj.series_data)
+            foreach (var data in repo.data)
             {
-                foreach (var data in repo.data)
-                {
-                    var fuelPrices = new FuelPrices();
+                var fuelPrices = new FuelPrices();
 
-                    foreach (var dataPoint in data)
-                        if (dataPoint.ToString().Length == 8 && !dataPoint.ToString().Contains('.'))
-                        {
-                            var result = DateTime.ParseExact(dataPoint.ToString(), "yyyyMMdd",
-                                CultureInfo.InvariantCulture);
+                foreach (var dataPoint in data)
+                    if (dataPoint.ToString().Length == 8 && !dataPoint.ToString().Contains('.'))
+                    {
+                        var result = DateTime.ParseExact(dataPoint.ToString(), "yyyyMMdd",
+                            CultureInfo.InvariantCulture);
 
-                            fuelPrices.FuelPriceDate = result;
-                        }
-                        else
-                            fuelPrices.FuelPrice = decimal.Parse(dataPoint.ToString());
-                    InsertData(fuelContext, fuelPrices);
-                }
+                        fuelPrices.FuelPriceDate = result;
+                    }
+                    else
+                    {
+                        fuelPrices.FuelPrice = decimal.Parse(dataPoint.ToString());
+                    }
+
+                InsertData(fuelContext, fuelPrices);
             }
         }
     }
@@ -60,5 +61,4 @@ public class DataManager : IDataManager
             }
         }
     }
-
 }
