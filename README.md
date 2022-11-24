@@ -1,6 +1,6 @@
 # RPM Assessment - Edward Lionte
 
-* This is a console application with a weekly scheduled, repeatable task that downloads weekly U.S. fuel pricing from “EIA Open Api” and saves it to the database. 
+* This is a console application with a weekly scheduled, repeatable task that downloads weekly U.S. fuel pricing from ï¿½EIA Open Apiï¿½ and saves it to the database. 
 
 * The apppsetings.json file has a connection string for a LocalDB as well as however many days you wish to lookback for the import.
 
@@ -8,3 +8,4 @@
 	- Improve logging and make it more robust.
 	- Provide more abstractions of methods and classes.
 	- Work on some sort of GUI to help simplify settings management.
+
