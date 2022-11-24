@@ -2,7 +2,7 @@
 
 namespace FuelPricingService;
 
-internal class Startup
+public class Startup
 {
     private static readonly IConfigurationBuilder builder =
         new ConfigurationBuilder().AddJsonFile("appsettings.json", false, true);

@@ -1,16 +1,25 @@
-﻿using FuelPricingService.Manager;
-using FuelPricingService.Model;
+﻿using FuelPricingService.Engine;
+using FuelPricingService.Manager;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace FuelPricingService;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
-        var start = new Startup();
-        var dataManager = new DataManager();
-        var dataBaseObject = new FuelPriceDBContext(start.conn, start.DaysLookBack);
+        using var host = Host.CreateDefaultBuilder(args)
+            .UseWindowsService(options => { options.ServiceName = "Fuel Price DB Service"; })
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton<DataEngine>();
+                services.AddSingleton<Startup>();
+                services.AddSingleton<FuelPriceDBManager>();
+                services.AddHostedService<SchedulerService>();
+            })
+            .Build();
 
-        dataManager.GetFuelApiData(dataBaseObject).Wait();
+        await host.RunAsync();
     }
 }

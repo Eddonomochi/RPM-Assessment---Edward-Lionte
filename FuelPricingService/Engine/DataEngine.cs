@@ -3,9 +3,9 @@ using System.Net.Http.Headers;
 using FuelPricingService.Model;
 using Newtonsoft.Json;
 
-namespace FuelPricingService.Manager;
+namespace FuelPricingService.Engine;
 
-public class DataManager
+public class DataEngine
 {
     public async Task GetFuelApiData(FuelPriceDBContext fuelContext)
     {
